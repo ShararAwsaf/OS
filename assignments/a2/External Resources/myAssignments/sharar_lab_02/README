@@ -1,0 +1,23 @@
+****************************************************
+Sharar Mahmood                          0955835
+CIS 2520                                Lab 2
+sharar@uoguelph.ca                    	Sept 23, 2017
+****************************************************
+
+Program Description
+****************************************************
+Program that prints two boardgames and two books using function pointers
+
+Additional Program  Details
+****************************************************
+To compile simply type make
+Executable “program” will be place in the bin to run
+
+Assumptions or Limitations
+****************************************************
+No known limitations
+No other optional features
+
+
+
+

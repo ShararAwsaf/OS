@@ -1,0 +1,13 @@
+N F 14
+N R 28
+N L 32
+E F 14
+E R 17
+S L 42
+S L 38
+W L 98
+N F 23
+N R 55
+N L 76
+N L 67
+N F 22
