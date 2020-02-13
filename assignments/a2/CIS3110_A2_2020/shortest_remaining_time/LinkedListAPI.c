@@ -234,7 +234,8 @@ int deleteNodeFromList(List * list,void * toBeDeleted){
 	if(temp -> previous == NULL) {
 		//printf("REACHED\n");
 		list -> head = temp-> next;
-		list-> head -> previous = NULL;
+		if(list->head != NULL)
+			list-> head -> previous = NULL;
 
 		list->deleteNode((void*)temp->data);
 		free(temp);
