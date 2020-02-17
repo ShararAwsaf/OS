@@ -5,7 +5,7 @@
  * has a counter
  * */
 typedef struct priorityQ{
-	List * list;
+	List list;
 	int count;
 	
 }PriorityQ;

@@ -4,15 +4,15 @@
 
 # include "LinkedListAPI.h"
 
-List *initializeList(void (*printFunction)(void *toBePrinted),void (*deleteFunction)(void *toBeDeleted),int (*compareFunction)(const void *first,const void *second)){
-	List * aList;
-	aList = malloc(sizeof(List));
-	aList->head = NULL;
-	aList->tail = NULL;
+List initializeList(void (*printFunction)(void *toBePrinted),void (*deleteFunction)(void *toBeDeleted),int (*compareFunction)(const void *first,const void *second)){
+	List aList;
 	
-	aList->printNode = printFunction;
-	aList->deleteNode = deleteFunction;
-	aList->compare = compareFunction;
+	aList.head = NULL;
+	aList.tail = NULL;
+	
+	aList.printNode = printFunction;
+	aList.deleteNode = deleteFunction;
+	aList.compare = compareFunction;
 	
 	return aList;
 }
@@ -38,226 +38,180 @@ void printBackwards(List * list){
 }
 
 void * getFromFront(List * list){
+	if(list->head == NULL)
+		return NULL;
+
 	return list->head -> data;
 }
 
 void * getFromBack(List * list){
-	return list->tail-> data;
+	if (list->tail == NULL){
+		return NULL;
+	}
+	
+	return list->tail->data;
 }
 
 void insertSorted(List *list, void *toBeAdded, int value){
-	Node * temp,*aNode;
-	temp = list->head;
-	aNode = malloc(sizeof(Node));
-	aNode -> priority = value;
-	if(temp == NULL){
-		aNode = malloc(sizeof(Node));
-		aNode -> data = toBeAdded;
-		aNode -> priority = value;
-		aNode -> next = NULL;
-		aNode -> previous = NULL;
-		list->head = aNode;
-		list->tail = aNode;
-		list->head->next = NULL;
-		list->tail->next = NULL;
+	if (list == NULL || toBeAdded == NULL){
 		return;
 	}
 	
-	if(compare(aNode,list->head)<0){
-		aNode = malloc(sizeof(Node));
-		aNode -> data = toBeAdded;
-		aNode -> priority = value;
-		aNode -> previous = NULL;
-		aNode->next = list->head;
-		list->head = aNode;
-		return;
+	if (list->head == NULL){
+		insertBack(list, toBeAdded);
 		
+		return;
 	}
 	
-	if(list->head->next == NULL && compare(aNode,list->head)<0){
-			
-			aNode = malloc(sizeof(Node));
-			aNode->data = toBeAdded;
-			aNode -> priority = value;
-			aNode -> previous = NULL;
-			list->head->next = NULL;
-			list ->tail = list->head;
-			aNode->next = list->head;
-			list->head = aNode;
-			
-			return;
-	}
-	else if(list->head->next == NULL && compare(aNode,list->head)>=0){
-		aNode = malloc(sizeof(Node));
-		aNode->data = toBeAdded;
-		aNode -> priority = value;
-		aNode -> previous = list->head;
-		aNode->next = NULL;
-		list->head->next = aNode;
-		list->tail = aNode;
+	if (list->compare(toBeAdded, list->head->data) <= 0){
+		insertFront(list, toBeAdded);
+		
 		return;
 	}
-
-	if(temp == NULL){
-		aNode = malloc(sizeof(Node));
-		aNode -> data = toBeAdded;
-		aNode -> priority = value;
-		aNode -> next = NULL;
-		aNode -> previous = NULL;
-		list->head = aNode;
-		list->tail = aNode;
+	
+	if (list->compare(toBeAdded, list->tail->data) > 0){
+		insertBack(list, toBeAdded);
+		
 		return;
 	}
+	
+	Node* currNode = list->head;
+	
+	while (currNode != NULL){
+		if (list->compare(toBeAdded, currNode->data) <= 0){
 		
-	while(temp->next != NULL) {
-		
-		if(compare(aNode,temp)>=0 && compare(aNode,temp->next)<0){
-			aNode = malloc(sizeof(Node));
-			aNode->data = toBeAdded;
-			aNode -> priority = value;
-			aNode -> previous = temp;
-			aNode->next = temp->next;
-			temp->next = aNode;
+			
+			Node* newNode = initializeNode(toBeAdded);
+			newNode->next = currNode;
+			newNode->previous = currNode->previous;
+			currNode->previous->next = newNode;
+			currNode->previous = newNode;
+			
 			
 			return;
 		}
-		temp = temp -> next;
+	
+		currNode = currNode->next;
 	}
 	
-	aNode = malloc(sizeof(Node));
-	aNode -> data = toBeAdded;
-	aNode -> priority = value;
-	temp->next = aNode;
-	aNode -> next = NULL;
-	aNode -> previous = temp;
-	list -> tail = aNode;
-	
+	return;
 }
 
 Node * initializeNode(void *data){
-	Node * newNode;
-	newNode = malloc(sizeof(Node));
+	Node* tmpNode;
 	
-	newNode -> data = data;
-	newNode -> next = NULL;
-	newNode -> previous = NULL;
+	tmpNode = (Node*)malloc(sizeof(Node));
 	
-	return newNode;
+	if (tmpNode == NULL){
+		return NULL;
+	}
+	
+	tmpNode->data = data;
+	tmpNode->previous = NULL;
+	tmpNode->next = NULL;
+	
+	return tmpNode;
 }
 
 void insertFront(List *list, void *toBeAdded){
-	
-	Node * newNode;
-	
-	newNode = initializeNode(toBeAdded);
-	
-	newNode -> next = list -> head;
-	
-	newNode -> previous = NULL;
-	
-	if(list -> head != NULL){
-		list -> head->previous = newNode;
+
+	if (list == NULL || toBeAdded == NULL){
+		return;
 	}
 	
-	list -> head = newNode;
+	Node* newNode = initializeNode(toBeAdded);
 	
+    if (list->head == NULL && list->tail == NULL){
+        list->head = newNode;
+        list->tail = list->head;
+    }else{
+		newNode->next = list->head;
+        list->head->previous = newNode;
+    	list->head = newNode;
+    }
 	
 
 }
 
 void insertBack(List* list, void * toBeAdded){
-	Node * newNode;
-	
-	newNode = initializeNode(toBeAdded);
-	
-	newNode -> next = NULL;
-	newNode -> previous = list->tail;
-	
-	if(list -> head == NULL){
-		list->head = newNode;
+	if (list == NULL || toBeAdded == NULL){
 		return;
 	}
 	
-	if(list->tail == NULL){
-		newNode -> previous = list->head;
-	}
+	Node* newNode = initializeNode(toBeAdded);
 	
-	if(list -> tail != NULL){
-		list -> tail -> next = newNode;
-	}
-	list -> tail = newNode;
-	
-	if(list -> head != NULL && list -> tail -> previous == NULL){
-		list -> tail -> previous = list -> head;
-	}
-	
-	if(list-> head != NULL && list -> head -> next == NULL && list -> tail != NULL){
-		list -> head -> next = list -> tail;
-	}
+    if (list->head == NULL && list->tail == NULL){
+        list->head = newNode;
+        list->tail = list->head;
+    }else{
+		newNode->previous = list->tail;
+        list->tail->next = newNode;
+    	list->tail = newNode;
+    }
+    
 }
 
 void deleteList(List* list){
-	Node * temp;
-	temp = list->head;
-	while(list->head!=NULL){
-		list->deleteNode(temp->data);
-		temp = list -> head;
-		list->head = temp->next;
-		free(temp);
+	if (list == NULL){
+		return;
 	}
-	list -> tail = NULL;
-	free(list);
 	
-	list  = NULL;
+	if (list->head == NULL && list->tail == NULL){
+		return;
+	}
+	
+	Node* tmp;
+	
+	while (list->head != NULL){
+		list->deleteNode(list->head->data);
+		tmp = list->head;
+		list->head = list->head->next;
+		free(tmp);
+		
+	}
+	
+	list->head = NULL;
+	list->tail = NULL;
+	
 }
 
 int deleteNodeFromList(List * list,void * toBeDeleted){
 	
-	if(list->head == NULL || toBeDeleted == NULL){
-		return EXIT_FAILURE;
+	if (list == NULL || toBeDeleted == NULL){
+		return -1;
 	}
 	
-	Node * temp = list -> head;
+	Node* tmp = list->head;
 	
-	while(temp!= NULL){
-		
-		if(temp->data == toBeDeleted){
-			break;
-		}
-		temp = temp->next;
-	}
-	
-	if(temp == NULL){
-		return -1;	
-	}
-	
-	if(temp -> previous == NULL) {
-		//printf("REACHED\n");
-		list -> head = temp-> next;
-		if(list->head != NULL)
-			list-> head -> previous = NULL;
+	while(tmp != NULL){
+		if (toBeDeleted==tmp->data){
+			//Unlink the node
+			Node* delNode = tmp;
+			
+			if (tmp->previous != NULL){
+				tmp->previous->next = delNode->next;
+			}else{
+				list->head = delNode->next;
+			}
+			
+			if (tmp->next != NULL){
+				tmp->next->previous = delNode->previous;
+			}else{
+				list->tail = delNode->previous;
+			}
+			
+			list->deleteNode(delNode->data);
+			free(delNode);
 
-		list->deleteNode((void*)temp->data);
-		free(temp);
-		return EXIT_SUCCESS;
+			
+			return EXIT_SUCCESS;
+			
+		}else{
+			tmp = tmp->next;
+		}
 	}
 	
-	else if(temp -> next == NULL) {
-		
-		list->tail = temp -> previous;
-		list -> tail -> next = NULL;
-		list->deleteNode(temp->data);
-		free(temp);
-		return EXIT_SUCCESS;
-	}
-	
-	else {
-		temp-> previous ->next = temp-> next;
-		temp-> next -> previous = temp-> previous;
-		list->deleteNode(temp -> data);
-		free(temp);
-		return EXIT_SUCCESS;
-	}
+	return -1;
 	
 }
 
@@ -269,5 +223,5 @@ int deleteNodeFromList(List * list,void * toBeDeleted){
  * */
 int compare(const void * first,const void * second) {
 
-	return (int)(((Node*)first)->priority) - (int)(((Node*)second)->priority);
+	return ((Node*)first)->priority - ((Node*)second)->priority;
 }

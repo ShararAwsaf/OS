@@ -40,7 +40,7 @@ PriorityQ * createQ(void (*printFunction)(void *toBePrinted),
  * @param an element to be added
  * */
 void enqueue(PriorityQ * aQ,void * data){
-	insertBack(aQ->list,data);
+	insertBack( &(aQ->list),data);
 	aQ -> count += 1;	
 }
 
@@ -50,7 +50,7 @@ void enqueue(PriorityQ * aQ,void * data){
  * @param data to be placed
  * */
 void insert(PriorityQ * aQ,void * data,int value){
-	insertSorted(aQ->list,data, value);
+	insertSorted(&(aQ->list),data, value);
 	aQ -> count += 1;	
 }
 
@@ -60,8 +60,8 @@ void insert(PriorityQ * aQ,void * data,int value){
  * @return element on top
  * */
 void * peek(PriorityQ * aQ){
-	if(aQ ->list != NULL)
-		return getFromFront(aQ -> list);
+	if(&(aQ ->list) != NULL)
+		return getFromFront(&(aQ->list));
 	else
 		return NULL;
 }
@@ -74,11 +74,11 @@ void pop(PriorityQ * aQ) {
 	if(aQ == NULL){
 		return;
 	}
-	else if(aQ -> list == NULL){
+	else if(&(aQ -> list) == NULL){
 		return;
 	}
 	
-	int result = deleteNodeFromList(aQ -> list, peek(aQ));
+	int result = deleteNodeFromList(&(aQ->list), peek(aQ));
 
 	if(result == EXIT_SUCCESS){
 		aQ -> count -= 1;
@@ -99,7 +99,7 @@ int count(PriorityQ * aQ){
  * @param a priority q to print
  * */
 void printQ(PriorityQ * aQ){
-	printForward(aQ->list);
+	printForward(&(aQ->list));
 }
 # endif
 

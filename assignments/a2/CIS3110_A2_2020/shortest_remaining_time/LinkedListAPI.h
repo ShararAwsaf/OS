@@ -40,7 +40,7 @@ typedef struct listHead{
 *@param deleteFunction function pointer to delete a single piece of data from the list
 *@param compareFunction function pointer to compare two nodes of the list in order to test for equality or order
 **/
-List *initializeList(void (*printFunction)(void *toBePrinted),void (*deleteFunction)(void *toBeDeleted),int (*compareFunction)(const void *first,const void *second));
+List initializeList(void (*printFunction)(void *toBePrinted),void (*deleteFunction)(void *toBeDeleted),int (*compareFunction)(const void *first,const void *second));
 
 /**Function for creating a node for a linked list. This node contains generic data and may be connected to 
 other notes in a list.
