@@ -16,7 +16,7 @@ Dispatch Algorithm : ....
 
 #define MAX_LINE_LENGTH 100
 #define TIME_STEP 1
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_COMPACT 0
 /*
 Any required standard libraries and your header files here
@@ -490,7 +490,7 @@ void dispatcher(FILE *fd, int harddrive){
         newArrival_head = countNewArrival > 0 ? peek(newArrivalQ) : NULL;
 
         // GLOBAL TIME MATCHES THE ARRIVAL TIME OF BLOCKED TOP THEN PUT IN READY Q
-        if (block_head != NULL && globalTime == block_head->nextArrivalTime){
+        if (block_head != NULL && globalTime >= block_head->nextArrivalTime){
             // ADJUST TOTAL BLOCKED TIME
             block_head->totalBlockTime += (globalTime - block_head->blockStart);
 
@@ -505,7 +505,7 @@ void dispatcher(FILE *fd, int harddrive){
         }
 
         // IF GLOBAL TIME MATCHES ARRIVAL TIME OF NEW ARRIVAL HEAD THEN PUT IN READY Q
-        if(newArrival_head != NULL && globalTime == newArrival_head->nextArrivalTime){
+        if(newArrival_head != NULL && globalTime >= newArrival_head->nextArrivalTime){
             // ADJUST READY TIME
             newArrival_head->readyStart = globalTime;
 
