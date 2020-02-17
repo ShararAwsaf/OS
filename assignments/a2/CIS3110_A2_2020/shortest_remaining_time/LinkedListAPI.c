@@ -63,13 +63,13 @@ void insertSorted(List *list, void *toBeAdded, int value){
 		return;
 	}
 	
-	if (list->compare(toBeAdded, list->head->data) <= 0){
+	if (list->compare(toBeAdded, list->head->data) < 0){
 		insertFront(list, toBeAdded);
 		
 		return;
 	}
 	
-	if (list->compare(toBeAdded, list->tail->data) > 0){
+	if (list->compare(toBeAdded, list->tail->data) >= 0){
 		insertBack(list, toBeAdded);
 		
 		return;

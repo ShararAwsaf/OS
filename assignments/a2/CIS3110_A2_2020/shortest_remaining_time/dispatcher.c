@@ -16,7 +16,8 @@ Dispatch Algorithm : ....
 
 #define MAX_LINE_LENGTH 100
 #define TIME_STEP 1
-
+#define DEBUG 1
+#define DEBUG_COMPACT 0
 /*
 Any required standard libraries and your header files here
 */
@@ -338,7 +339,9 @@ void dispatcher(FILE *fd, int harddrive){
             
             token = strtok(NULL, " ");
         }
-        printf("Process %3d wants to start at %6dms and run for %6dms and has %3d hard drive exchanges\n",  process_id, start_time, run_time, num_exchanges);
+
+        if(DEBUG)
+            printf("Process %3d wants to start at %6dms and run for %6dms and has %3d hard drive exchanges\n",  process_id, start_time, run_time, num_exchanges);
 
         PCB* newPCB =  createPCB(process_id, start_time, run_time, exchangeTimes, num_exchanges);
         enqueue(newArrivalQ, newPCB);
@@ -351,8 +354,10 @@ void dispatcher(FILE *fd, int harddrive){
             idle.remainingTime = maxRemainingTime;
         }
     }
-    printf("\nALL THE NEW ARRIVAL RECORDS\n");
-    printQ(newArrivalQ);
+    if(DEBUG){
+        printf("\nALL THE NEW ARRIVAL RECORDS\n");
+        printQ(newArrivalQ);
+    }
 
     // int tmpNewArrival = countNewArrival;
     // while(tmpNewArrival){
@@ -373,19 +378,20 @@ void dispatcher(FILE *fd, int harddrive){
 
    PCB* block_head = NULL;
    PCB* newArrival_head = NULL;
-   PCB* ready_head = NULL;
+   PCB* isReadyPCB = NULL;
 
    // PREVIOUSLY: (countNewArrival > 0 || countReady > 0 || countBlocked > 0)
     while(totalProcesses > countDone){
-        //printf("NEW : %d READY : %d BLOCKED : %d\n", countNewArrival, countReady, countBlocked);
-
+        if(DEBUG_COMPACT)
+            printf("Clock: %d | Running: %d\n", globalTime, running->pid);
         // EXCHANGE TIME OCCURRED FOR CURRENT RUNNING PROCESS
         if(running->pid > 0){
             
             
             // IF CYCLE TIME IS COMPLETE
             if(running->currentCycleTime == 0){
-                printf("!!!!!!!!!!!!!! REACHED EXCHANGE @ %d !!!!!!!!!!!!!", globalTime);    
+                if(DEBUG)
+                    printf("!!!!!!!!!!!!!! REACHED EXCHANGE @ %d !!!!!!!!!!!!!", globalTime);    
                 
                 int isBlockedAfterCurrentCycle = running->isBlockedAfterCurrentCycle;
 
@@ -410,9 +416,12 @@ void dispatcher(FILE *fd, int harddrive){
 
                 // IF COMPLETED CYCLE IS A RUN TILL BLOCKING
                 if(isBlockedAfterCurrentCycle){
-                    printf("\n>>>>>>>>>>>>>>BLOCKING CYCLE<<<<<<<<<<<<\n");
+                    if(DEBUG)
+                        printf("\n>>>>>>>>>>>>>>BLOCKING CYCLE<<<<<<<<<<<<\n");
                     // ADJUST NEXT ARRIVAL TIME
-                    running->nextArrivalTime = globalTime + harddrive;
+                    int overHead = blockedQ->count == 0 ? globalTime : ((PCB*)peek(blockedQ))->nextArrivalTime;
+                    int harDriveCount = blockedQ->count == 0 ? 1 : blockedQ->count;
+                    running->nextArrivalTime = overHead + harddrive*(harDriveCount);
 
                     // ADJUST BLOCK START TIME
                     running->blockStart = globalTime;
@@ -427,9 +436,11 @@ void dispatcher(FILE *fd, int harddrive){
                 }
 
                 //------------------------DEBUG------------------------//
-                printf("\n!!!!!!!!!!!!!!!AFTER EXCHANGE BLOCKED!!!!!!!!!!!!!!!!!!\n");
-                printQ(blockedQ);
-                printf("!!!!!!!!!!!!!!!AFTER EXCHANGE BLOCKED!!!!!!!!!!!!!!!!!!\n");
+                if (DEBUG){
+                    printf("\n!!!!!!!!!!!!!!!AFTER EXCHANGE BLOCKED!!!!!!!!!!!!!!!!!!\n");
+                    printQ(blockedQ);
+                    printf("!!!!!!!!!!!!!!!AFTER EXCHANGE BLOCKED!!!!!!!!!!!!!!!!!!\n");
+                }
                 //------------------------DEBUG------------------------//
 
             }
@@ -449,17 +460,35 @@ void dispatcher(FILE *fd, int harddrive){
                 running = NULL;
 
                 //------------------------DEBUG------------------------//
-                printf("\n$$$$$$$$$$$$$$$$$$$$$DONE PROCESSES$$$$$$$$$$$$$$$$$$$$$\n");
-                printQ(doneQ);
-                printf("$$$$$$$$$$$$$$$$$$$$$DONE PROCESSES$$$$$$$$$$$$$$$$$$$$$\n");
+                if(DEBUG){
+                    printf("\n$$$$$$$$$$$$$$$$$$$$$DONE PROCESSES$$$$$$$$$$$$$$$$$$$$$\n");
+                    printQ(doneQ);
+                    printf("$$$$$$$$$$$$$$$$$$$$$DONE PROCESSES$$$$$$$$$$$$$$$$$$$$$\n");
+                }
                 //------------------------DEBUG------------------------//
             }
 
         } // DONE PROCESSING or BLOCKING A PROCESS that is NOT IDLE
 
+        
+        // PREMPTIVE SCHEDULING
+
+        // PUT CURRENTLY RUNNING PROCESS TO READY Q (SORTED BY RT ASCENDING)
+        if(running != NULL && running->pid > 0 ){
+            running->readyStart = globalTime;
+
+            // INSERT SORTED BY SRT
+            PCB* newRunningPCB = copyPCB(running);
+            insert(readyQ, newRunningPCB, running->remainingTime);
+            countReady += 1;
+
+            deletePCB(running);
+            running = NULL;
+        }
+
         block_head = countBlocked > 0 ? peek(blockedQ) : NULL;
         newArrival_head = countNewArrival > 0 ? peek(newArrivalQ) : NULL;
-        
+
         // GLOBAL TIME MATCHES THE ARRIVAL TIME OF BLOCKED TOP THEN PUT IN READY Q
         if (block_head != NULL && globalTime == block_head->nextArrivalTime){
             // ADJUST TOTAL BLOCKED TIME
@@ -489,32 +518,21 @@ void dispatcher(FILE *fd, int harddrive){
 
         
 
-        // PREMPTIVE SCHEDULING
+        
 
-        // PUT CURRENTLY RUNNING PROCESS TO READY Q (SORTED BY RT ASCENDING)
-        if(running != NULL && running->pid > 0 ){
-            running->readyStart = globalTime;
+        isReadyPCB = countReady > 0 ? peek(readyQ) : NULL;
 
-            // INSERT SORTED BY SRT
-            PCB* newRunningPCB = copyPCB(running);
-            insert(readyQ, newRunningPCB, running->remainingTime);
-            countReady += 1;
-
-            deletePCB(running);
-            running = NULL;
-        }
-
-        ready_head = countReady > 0 ? peek(readyQ) : NULL;
-
-        if(globalTime % 50 == 0){
+        //------------------------- DEBUG ------------------------//
+        if(DEBUG && globalTime % 50 == 0){
             printf("\nTASK SCHEDULING @ TIME: %d\n", globalTime);
             printf("\n*********BEFORE SCHEDULING READY*********\n");
             printQ(readyQ);
             printf("*********BEFORE SCHEDULING READY*********\n");
         }
+        //------------------------- DEBUG ------------------------//
 
         // ASSIGN THE SRT PROCESS FROM READY Q TO RUNNING
-        if(ready_head != NULL ){ // 
+        if(isReadyPCB != NULL ){ // 
             running = popPCB(readyQ);
             countReady -= 1;
         }
@@ -524,8 +542,7 @@ void dispatcher(FILE *fd, int harddrive){
         }
         
         //------------------------- DEBUG ------------------------//
-
-        if(globalTime % 50 == 0){
+        if(DEBUG && globalTime % 50 == 0){
             printf("\n*********RUNNING*********\n");
             printPCB(running);
             printf("\n*********RUNNING*********\n");
@@ -539,7 +556,8 @@ void dispatcher(FILE *fd, int harddrive){
         
         // TO PREVENT IDLE FROM RUNNING AS THE LAST PROCESS
         if(totalProcesses > countDone){
-
+            
+            // PROCESSING NEEDS TO BE DONE ONLY IF THERE IS REMAINING TIME LEFT FOR NON-IDLE PROCESS
             if(running->pid == 0 || (running->pid > 0 && running->remainingTime > 0)) {
                 // ADJUST READY TIME
                 running->totalReadyTime += (globalTime - running->readyStart);
@@ -552,9 +570,16 @@ void dispatcher(FILE *fd, int harddrive){
         }
     }
 
-    
+    if(DEBUG){
+        printf("\n\n SRT SCHEDULING IS COMPLETE. RESULTS: \n\n");
+        
+    }   
+
+
+    // FINAL OUTPUT PRINTING IN FORMAT EXPECTED
     printIdlePCB(idle);
     printQ(doneQ);
+
     deleteQ(idle.exchangeTimes);
 
     // REMOVE PRIORITY Q
@@ -575,6 +600,6 @@ void dispatcher(FILE *fd, int harddrive){
 
 
 /**
- * SCP: scp dispatcher.c LinkedListAPI.c oscreader@192.168.56.03:~/OS-ASSIGNMENTS/A2/shortest_remaining_time/
+ * SCP: scp dispatcher.c LinkedListAPI.c LinkedListAPI.h queue.c oscreader@192.168.56.03:~/OS-ASSIGNMENTS/A2/shortest_remaining_time/
  * VALGRIND : valgrind --leak-check=full ./Dispatcher 800 <test_inputs/test2.txt
  * **/
