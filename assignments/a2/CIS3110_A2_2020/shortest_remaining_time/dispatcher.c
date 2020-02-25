@@ -1,10 +1,17 @@
 /*
 dispatcher.c
 
-Student Name : ....
-Student ID # : ....
+Student Name : Sharar Mahmood
+Student ID # : 0955835
 
-Dispatch Algorithm : ....
+Dispatch Algorithm : Shortest Remaining Time (SRT) First
+
+Citations
+----------
+LinkedListAPI and Queue API taken from CIS 2520 F17
+Implementations of Queue API has been completed by Sharar Mahmood on CIS 2520 F17 which has been reused here.
+Implementation of LinkedListAPI has been completed as a part of current assignment.
+----------
 */
 
 #include <string.h>

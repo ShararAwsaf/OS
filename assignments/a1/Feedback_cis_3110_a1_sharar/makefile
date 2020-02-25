@@ -1,0 +1,54 @@
+CC = gcc
+CFLAGS = 
+
+# Q1
+TARGET_FORK = fork
+TARGET_THR_CREATE = thr_create
+
+# Q2
+TARGET_PROC_MANAGE = proc_manage
+
+# Q3
+TARGET_THR_SHARED = thr_shared
+TARGET_PROC_SHARED = proc_shared
+
+# Q4
+TARGET_IBADCNT = ibadcnt
+
+ALL_TARGETS = $(TARGET_FORK) $(TARGET_THR_CREATE) $(TARGET_PROC_MANAGE) $(TARGET_THR_SHARED) $(TARGET_PROC_SHARED) $(TARGET_IBADCNT)
+
+all: $(ALL_TARGETS)
+
+$(TARGET_FORK): $(TARGET_FORK).o
+
+	$(CC) $(CFLAGS) $^ -o $(TARGET_FORK) -lpthread
+
+$(TARGET_THR_CREATE): $(TARGET_THR_CREATE).o
+
+	$(CC) $(CFLAGS) $^ -o $(TARGET_THR_CREATE) -lpthread
+
+
+$(TARGET_PROC_MANAGE): $(TARGET_PROC_MANAGE).o
+
+	$(CC) $(CFLAGS) $^ -o $(TARGET_PROC_MANAGE) -lpthread
+
+
+$(TARGET_THR_SHARED): $(TARGET_THR_SHARED).o
+
+	$(CC) $(CFLAGS) $^ -o $(TARGET_THR_SHARED) -lpthread
+
+$(TARGET_PROC_SHARED): $(TARGET_PROC_SHARED).o
+
+	$(CC) $(CFLAGS) $^ -o $(TARGET_PROC_SHARED) -lpthread
+
+
+$(TARGET_IBADCNT): $(TARGET_IBADCNT).o
+
+	$(CC) $(CFLAGS) $^ -o $(TARGET_IBADCNT) -lpthread
+
+clean:
+
+	$(RM) *.o $(ALL_TARGETS)
+
+zip:
+	zip cis_3110_a1_sharar.zip *.c *.txt makefile	

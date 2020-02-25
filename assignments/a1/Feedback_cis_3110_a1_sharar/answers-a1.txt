@@ -1,0 +1,66 @@
+Name:Sharar Mahmood
+ID:0955835
+
+Experiment 1. Thread and Process Creation
+
+Q1)
+Ans: 
+
+Fork Timing: Executing fork code gave the average time for creating 250 child processes. Timing varies from 42.536000 microsec - 155.132000 microsecs on average. This was done by running the progrom multiple times.
+
+Thread Timing: Executing thread code gave the average time for creating 250 threads of a single process. The timing varies from 4.712000 microsec - 7.924000 microsec with occassional outlier values of 60 microsec - 86 microsec recorded.
+
+Observed differences and reasoning: The thread creation time is much smaller than forking time as the forking of a process needs to allocate system resources for the child processes. However, for creating a thread OS is creating a particular block or function of the current process. This only requires a separate stack for each thread and hence is much more lightweight than creating whole processes. Threads are encouraged if a process needs parallel execution of its different constituting blocks and separating foreground services from background.
+
+Experiment 2. Process Management 
+
+Q2)
+Ans: 
+Obtained output after running ./proc_manage:
+
+hello
+This is the process with the process ID of 27390
+hello
+This is the process with the process ID of 27390
+hello
+This is the process with the process ID of 27390
+hello
+This is the process with the process ID of 27390
+oscreader@OSC:~/OS-ASSIGNMENTS/A1$ hello
+This is the process with the process ID of 27392
+hello
+This is the process with the process ID of 27392
+hello
+This is the process with the process ID of 27391
+hello
+This is the process with the process ID of 27391
+hello
+This is the process with the process ID of 27391
+hello
+This is the process with the process ID of 27393
+hello
+This is the process with the process ID of 27393
+
+Hello printed 11 times
+Initial Parent Process : 27390
+Number of Processes Created : 3 (3 new processes 27391, 27392, 27393) got created.
+
+Each child process has a different memory address but is a clone of the parent process they are forked from. They resume from where the parent process left off and complete subsequent instructions. Any instruction already executed by parent process will not get executed in child process which can be understood by drawing a tree of parent child processes and counting number of times hello got printed.
+
+Experiment 3. Processes vs Threads
+
+Q3)
+Ans: 
+When running the main process and child thread have the same shared number in memory whereas in case of child process creation it is creating a new process and hence the value of the child and parent process differ. The shared variable of child thread belongs to a single parent process and so the data is consistent across all threads. However, creating separate processes creates an individual copy of the shared variable for the processes and so the shared variable value differs from the parent process value. Threads are lighter weight processes where only CPU Context Switching happens as they belong to same process.
+
+Experiment 4. The Counting Problem
+
+Q4)
+Ans:
+
+NITER = 1000000
+Expected result of cnt variable: 2 * NITER
+Obtained result of cnt variable: 1551453, 1564653, 1512253
+
+Observation and Conclusions: The expected results and obtained results are different and the actual output is less than what is expected. This is not behaving correctly or as we expected. 
+The reason is the simultaneous running of threads is causing an older value of cnt to be read from memory and changes made by one thread to cnt is not being correctly propagated to other. A way to verify the behavior is through observing that the sum is never above the expected result meaning that some additions are getting lost. The way to solve this issue is using mutexes. The above counting problem is thus a synchronization issue caused due to arbitrary shared memory access by two running threads.
