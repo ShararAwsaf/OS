@@ -170,7 +170,7 @@ void insertSorted(List *list, void *toBeAdded, int value){
     }
 
     // ITEM SMALLER THAN LIST HEAD (ASSUMING LIST IS ALREADY SORTED)
-    if(list->head != NULL && list->compare(toBeAdded, list->head->data) <= 0){
+    if(list->head != NULL && list->compare(toBeAdded, list->head->data) < 0){
         insertFront(list, toBeAdded);
         return;
     }
@@ -185,7 +185,7 @@ void insertSorted(List *list, void *toBeAdded, int value){
     Node* aNode = NULL;
 
     while(tmp!=NULL){
-        if(list->compare(toBeAdded, tmp->data) <= 0){
+        if(list->compare(toBeAdded, tmp->data) < 0){
             aNode = initializeNode(toBeAdded);
             aNode->next = tmp;
             aNode->previous = tmp->previous;
