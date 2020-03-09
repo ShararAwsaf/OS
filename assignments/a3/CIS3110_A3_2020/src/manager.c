@@ -36,6 +36,10 @@ void printPageAddress(void* pgAddr){
 }
 
 int comparePageAddress(const void* pgAddr1, const void* pgAddr2){
+
+    if(pgAddr1 == NULL || pgAddr2 == NULL)
+        return -1;
+
     return ((PageAddress*)pgAddr1)->pageNumber - ((PageAddress*)pgAddr2)->pageNumber;
 }
 
@@ -68,6 +72,79 @@ void deleteQ(PriorityQ* aQ){
     free(aQ);
 }
 
+void printPhysicalAddress(char* buffer, int size){
+    for(int i = 0; i < size; i++){
+
+        printf("%d : %u\n",i, buffer[i]);
+    }
+    printf("\n");
+}
+
+char* fetchPhysicalAddress(int frameNumber, int offset){
+    FILE* fp = fopen(PHYSICAL_MEMORY, "rb");
+
+    if(fp == NULL){
+        
+        return NULL;
+    }
+    char* buffer = malloc(sizeof(FRAMESIZE));
+    int word_size = 1;
+    
+    // JUMP TO FRAME -> OFFSET
+    int memOffset = (frameNumber*FRAMESIZE) + offset;
+    fseek(fp, memOffset, SEEK_SET);
+
+    int readSize = (PHYSICAL_MEMSIZE - ftell(fp)) > FRAMESIZE ? FRAMESIZE : PHYSICAL_MEMSIZE - ftell(fp);
+    // READ THE NEXT FRAME SIZE
+    fread(buffer, readSize, word_size, fp);
+
+    fclose(fp);
+
+    return buffer;
+}
+
+Frame* createFrame(int frameNumber){
+
+    FILE* fp = fopen(PHYSICAL_MEMORY, "rb");
+
+    if(fp == NULL){
+        
+        return NULL;
+    }
+
+    if(frameNumber < 0)
+        return NULL;
+    Frame* newFrame = malloc(sizeof(Frame));
+
+    newFrame->frameNumber = frameNumber;
+    newFrame->frameAddress = fetchPhysicalAddress(frameNumber, 0);
+
+    return newFrame;
+}
+
+void deleteFrame(void* frame){
+    if(frame == NULL)
+        return;
+    
+    free(((Frame*)frame)->frameAddress);
+    free((Frame*)frame);
+}
+
+void printFrame(void* frame){
+    if(frame == NULL)
+        return;
+
+    printf("FRAME INDEX: %d  |  FRAME ADDRESS:\n",((Frame*)frame)->frameNumber);
+    printPhysicalAddress(((Frame*)frame)->frameAddress, FRAMESIZE);
+}
+
+int compareFrames(const void* frame1, const void* frame2){
+    if(frame1 == NULL || frame2 == NULL)
+        return -1;
+
+    return ((Frame*)frame1)->frameNumber - ((Frame*)frame2)->frameNumber;
+}
+
 int memmanager(char* addresses){
     /*
         Fetch address from tlb :: (yet to be implemented)
@@ -90,7 +167,7 @@ int memmanager(char* addresses){
        return EXIT_FAILURE;
    }
 
-   deleteQ(pageAddresses); 
+   deleteQ(pageAddresses);
 
    return EXIT_SUCCESS;
 }

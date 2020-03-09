@@ -27,5 +27,6 @@ int main(int argc, char **argv){
  * 
  * **/
 
-// file transfer: sharar$ scp ./src/* oscreader@192.168.56.03:~/OS-ASSIGNMENTS/A3/CIS3110_A3_2020/src/
+// code transfer: sharar$ scp ./src/* oscreader@192.168.56.03:~/OS-ASSIGNMENTS/A3/CIS3110_A3_2020/src/
+// tests transfer: sharar$ scp ./* oscreader@192.168.56.03:~/OS-ASSIGNMENTS/A3/CIS3110_A3_2020/
 // execution : valgrind --leak-check=full ./virmem

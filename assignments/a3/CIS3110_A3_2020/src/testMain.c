@@ -25,19 +25,35 @@ void testPageAddressCreate(){
 
 void testFileParser(){
     //char* fileName = "../addresses.txt";
-    
     char* fileName = "../testAddresses.txt";
+    //char* fileName = "../reviewQ1.txt";
+
     printf("PARSING: %s\n", fileName);
     PriorityQ* addressQ = getPageAddressesFromFile(fileName);
     printQ(addressQ);
     deleteQ(addressQ);
 }
 
+void testCalculatePhysicalAddress(){
+    int logicalAddress = 47709;
+    PageAddress* pgAddr = createPageAddress(logicalAddress);
+    printPageAddress(pgAddr);
+
+
+    char* physicalAddr = fetchPhysicalAddress(pgAddr);
+    
+    printPhysicalAddress(physicalAddr, FRAMESIZE);
+    free(physicalAddr);
+
+    deletePageAddress(pgAddr);
+}
+
 int main(void){
     printf("\n\nStarted Testing Manager\n\n");
 
     //testPageAddressCreate();
-    testFileParser();
-    
+    //testFileParser();
+    testCalculatePhysicalAddress();
+
     printf("\n\nFinished Testing Manager\n\n");
 }

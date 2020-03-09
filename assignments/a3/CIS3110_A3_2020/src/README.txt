@@ -78,3 +78,13 @@ which contains 1,000 logical addresses ranging from 0 to 65535.
 program is to translate each logical address to a physical address 
 and determine the contents of the signed byte stored 
 at the correct physical address.
+
+
+Answers to Review Q
+
+Ans 1:
+LOGICAL ADDRESS: 3085  |  PAGE INDEX: 12  |  PAGE OFFSET: 13
+LOGICAL ADDRESS: 42095  |  PAGE INDEX: 164  |  PAGE OFFSET: 111
+LOGICAL ADDRESS: 215201  |  PAGE INDEX: 72  |  PAGE OFFSET: 161
+LOGICAL ADDRESS: 650000  |  PAGE INDEX: 235  |  PAGE OFFSET: 16
+LOGICAL ADDRESS: 2000001  |  PAGE INDEX: 132  |  PAGE OFFSET: 129
