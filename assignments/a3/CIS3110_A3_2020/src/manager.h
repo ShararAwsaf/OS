@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "queue.h"
+#include <string.h>
 
 /**
  * Constants
@@ -21,12 +22,16 @@
  * Data structures
  * **/
 
+// DATA STRUCTURE FOR PAGE TABLE
 typedef struct PageAddress{
     int logicalAddress;
     int pageNumber;
     int offset;
+
+    int frameNumber;
 } PageAddress;
 
+// DATA STRUCTURE FOR PHYSICAL MEMORY
 typedef struct Frame{
     int frameNumber;
     char* frameAddress; // Fixed size : FRAME_SIZE
@@ -41,6 +46,7 @@ int memmanager(char* addresses);
 
 // Page address utils
 PageAddress* createPageAddress(int logicalAddress);
+void* copyPageAddress(const void* pgAddr);
 void deletePageAddress(void* pgAddr);
 void printPageAddress(void* pgAddr);
 int comparePageAddress(const void* pgAddr1, const void* pgAddr2);
@@ -53,7 +59,17 @@ void printFrame(void* frame);
 int compareFrames(const void* frame1, const void* frame2);
 
 // Helpers
+
+// Priority Q
 PriorityQ* getPageAddressesFromFile(char* filePath);
 void deleteQ(PriorityQ* aQ);
-char* fetchPhysicalAddress(int frameNumber, int offset);
+void* dequeue_front(PriorityQ* aQ, void* (*copyData)(const void* currentFront));
+void* searchQ(PriorityQ* aQ, void* searchItem);
+
+char* fetchPhysicalAddress(int frameNumber);
 void printPhysicalAddress(char* buffer, int size);
+Frame* findFrame(Frame** memory, int* frameNumber);
+
+void printMemory(Frame** memory);
+void clearTable(void** table, int size, void (*deleteFunc)(void* delItem));
+void deleteTLB(void* delItem);
