@@ -53,7 +53,7 @@ int comparePageAddress(const void* pgAddr1, const void* pgAddr2);
 int isPageAddress(PageAddress* pgAddr, int pageNumber);
 
 // Page Table utils
-Frame* createFrame(int frameNumber);
+Frame* createFrame(int frameNumber, int pageNumber);
 void deleteFrame(void* frame);
 void printFrame(void* frame);
 int compareFrames(const void* frame1, const void* frame2);
@@ -66,9 +66,9 @@ void deleteQ(PriorityQ* aQ);
 void* dequeue_front(PriorityQ* aQ, void* (*copyData)(const void* currentFront));
 void* searchQ(PriorityQ* aQ, void* searchItem);
 
-char* fetchPhysicalAddress(int frameNumber);
+char* fetchPhysicalAddress(int pageNumber);
 void printPhysicalAddress(char* buffer, int size);
-Frame* findFrame(Frame** memory, int* frameNumber);
+Frame* findFrame(Frame** memory, int* frameNumber, int pageNumber);
 
 void printMemory(Frame** memory);
 void clearTable(void** table, int size, void (*deleteFunc)(void* delItem));

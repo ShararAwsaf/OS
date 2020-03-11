@@ -87,7 +87,7 @@ void printPhysicalAddress(char* buffer, int size){
     printf("\n");
 }
 
-char* fetchPhysicalAddress(int frameNumber){
+char* fetchPhysicalAddress(int pageNumber){
     FILE* fp = fopen(PHYSICAL_MEMORY, "rb");
 
     if(fp == NULL){
@@ -99,7 +99,7 @@ char* fetchPhysicalAddress(int frameNumber){
     int wordSize = 1;
     
     // JUMP TO FRAME
-    int memOffset = (frameNumber*FRAMESIZE);
+    int memOffset = (pageNumber*FRAMESIZE);
     fseek(fp, memOffset, SEEK_SET);
 
     //int readSize = (PHYSICAL_MEMSIZE - ftell(fp)) > FRAMESIZE ? FRAMESIZE : PHYSICAL_MEMSIZE - ftell(fp);
@@ -113,13 +113,13 @@ char* fetchPhysicalAddress(int frameNumber){
     return buffer;
 }
 
-Frame* createFrame(int frameNumber){
+Frame* createFrame(int frameNumber, int pageNumber){
 
-    if(frameNumber < 0)
+    if(frameNumber < 0 || pageNumber < 0)
         return NULL;
 
     // FETCH MEMORY FROM BACKING STORE
-    char* frameAddress = fetchPhysicalAddress(frameNumber);
+    char* frameAddress = fetchPhysicalAddress(pageNumber);
 
     if(frameAddress == NULL)
         return NULL;
@@ -157,7 +157,7 @@ int compareFrames(const void* frame1, const void* frame2){
 
 // Fetches a new block of memory from backing store to physical memory
 // returns address to new frame
-Frame* findFrame(Frame** memory, int* frameNumber){ 
+Frame* findFrame(Frame** memory, int* frameNumber, int pageNumber){ 
 
     if(memory == NULL){
         
@@ -173,7 +173,7 @@ Frame* findFrame(Frame** memory, int* frameNumber){
     // Fetch the frame from backing memory.
     for(int i = 0; i < FRAMESIZE; i++){
         if(memory[i] == NULL){ 
-            Frame* newFrame = createFrame(i);
+            Frame* newFrame = createFrame(i, pageNumber);
             memory[i] = newFrame;
             *frameNumber = i;
             return newFrame;
@@ -279,7 +279,7 @@ int memmanager(char* addresses){
         if(foundFrame < 0){
             // PAGE TABLE MISS : SOURCE = BACKING STORE
             if(pgTable[pgAddr->pageNumber] == -1){    
-                findFrame(memory, &(pgAddr->frameNumber)); // UPDATES PG TABLE
+                findFrame(memory, &(pgAddr->frameNumber), pgAddr->pageNumber); // UPDATES PG TABLE
                 pgTable[pgAddr->pageNumber] = pgAddr->frameNumber;
                 foundFrame = pgAddr->frameNumber;
 
@@ -308,7 +308,7 @@ int memmanager(char* addresses){
         
         char targetPhysicalAddress = pgFrame->frameAddress[pgAddr->offset];
         //printf("\nPROCESSED: %d  |  TARGET FRAME: %d  |  TARGET ADDRESS: %u\n", processed, pgAddr->frameNumber, targetPhysicalAddress);
-        printf("Virtual address: %d Physical address: %x Value: %x\n", pgAddr->logicalAddress, (pgAddr->frameNumber*FRAMESIZE) + pgAddr->offset, targetPhysicalAddress);
+        printf("Virtual address: %d Physical address: %d Value: %d\n", pgAddr->logicalAddress, (pgAddr->frameNumber*FRAMESIZE) + pgAddr->offset, targetPhysicalAddress);
         //printPageAddress(pgAddr);
 
         processedAddresses[processed] = pgAddr;
@@ -323,7 +323,7 @@ int memmanager(char* addresses){
     printf("TLB Hits = %d\n", tlbTableHits);
     printf("TLB Hit Rate = %.3f\n", (float)tlbTableHits/(float)processed);
     
-    printBackingMemory();
+    //printBackingMemory();
 
     
     //printf("PG TABLE HITS : %d/%d = %f %% \n", pgTableHits, processed, (float)pgTableHits/(float)processed);
